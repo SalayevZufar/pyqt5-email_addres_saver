@@ -95,9 +95,8 @@ class MainWindow(QMainWindow):
 class Window2(QMainWindow):
     def __init__(self):
         super(Window2,self).__init__()
-        self.setGeometry(0,0,400,400)
-        # Set the size and title of the window
-        self.setMinimumSize(QSize(580,400))
+        self.setFixedSize(500,500)
+        
         self.setWindowIcon(QIcon("icons/icon_db.png"))
         self.setWindowTitle("Data Base")
         self.table()
@@ -110,31 +109,50 @@ class Window2(QMainWindow):
 
         table = QTableWidget(self)
         table.setRowCount(len(users))
-        table.setColumnCount(2)
+        table.setColumnCount(4)
         table.setMinimumWidth(500)
-        table.setMinimumHeight(500)
-
+        table.setMinimumHeight(450)
         
         count = 0  
+        table.setHorizontalHeaderItem(0, QTableWidgetItem('Email'))
+        table.setHorizontalHeaderItem(1, QTableWidgetItem('Password'))
+        table.setHorizontalHeaderItem(2, QTableWidgetItem('Edit column'))
+        table.setHorizontalHeaderItem(3, QTableWidgetItem('Delate row'))
         for column_1 in users:
-            table.setHorizontalHeaderItem(0, QTableWidgetItem('Email'))
+            
             table.setItem(count,0, QTableWidgetItem(column_1[1]))
             count +=1
         count = 0
+        
         for column_2 in users:
-            table.setHorizontalHeaderItem(1, QTableWidgetItem('Password'))
-            table.setItem(count,1, QTableWidgetItem(column_2[2]))
-            count +=1
             
+            table.setItem(count,1, QTableWidgetItem(column_2[2]))
+            
+            edit_btn = QtWidgets.QPushButton()
+            table.setCellWidget(count, 2, edit_btn)
+
+            edit_btn.setText("Edit")
+            
+            del_btn = QtWidgets.QPushButton()
+          
+            del_btn.pressed.connect(lambda: self.del_button(column_2[0]))
+            
+
+            table.setCellWidget(count, 3, del_btn)
+            del_btn.setText("Delate")
+            count +=1
+        
+
 
         table.resizeColumnsToContents()
         table.resizeRowsToContents()
+       
         table.show()
-
+        
         self.b1 = QtWidgets.QPushButton(self)
         self.b1.setText("Back")
         self.b1.clicked.connect(self.new_window)
-        self.b1.move(500, 0)
+        self.b1.move(420, 460)
         self.b1.resize(80,40)
 
         win = self.frameGeometry()
@@ -142,11 +160,25 @@ class Window2(QMainWindow):
         win.moveCenter(pos)
         self.move(win.topLeft())
         self.show()
+
+    def del_button(self,id):
+        con = sqlite3.connect('data.db')  
+        cur = con.cursor()
+        delete_column = f"DELETE from user where ID={id}"
+        cur.execute(delete_column)
+
+
+        con.commit()
+        cur.close()
+        self.new_window_2()
     def new_window(self):
         self.w = MainWindow()
         self.w.show()
         self.hide()
-    
+    def new_window_2(self):
+        self.w = Window2()
+        self.w.show()
+        self.hide()
         
 def window():  
     app = QApplication(sys.argv)
